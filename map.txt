@@ -1,0 +1,5 @@
+Foo north=Bar west=Baz south=Qu-ux
+Bar south=Foo west=Bee
+Bee west=Robert
+Robert west=Bob
+Kath west=Robert north=Foo east=Bar
