@@ -1,0 +1,6 @@
+{
+    "MaxAlienMoves": 100000,
+    "MapFile": "map.txt",
+    "AlienNamesFile": "alien-names.txt",
+    "DebugMode": false
+}

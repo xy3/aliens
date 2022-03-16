@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+var worldMap = WorldMap{}
+
 type WorldMap map[string]*City
 
 func (wm WorldMap) Serialize() (result string) {
@@ -17,10 +19,12 @@ func (wm WorldMap) Serialize() (result string) {
 	return strings.Trim(result, "\n")
 }
 
+// PrettyPrint formats the WorldMap into the original format using Serialize and prints the result
 func (wm WorldMap) PrettyPrint() {
 	fmt.Println(wm.Serialize())
 }
 
+// DestroyCity destroys a city and all of its connections to and from it
 func (wm WorldMap) DestroyCity(city *City) {
 	if city.North != nil {
 		city.North.South = nil
@@ -37,49 +41,22 @@ func (wm WorldMap) DestroyCity(city *City) {
 	wm[city.Name] = nil
 }
 
-type City struct {
-	Name       string
-	North      *City
-	East       *City
-	South      *City
-	West       *City
-	Inhabitant *Alien
-}
 
-func (c *City) String() string {
-	var routes string
-	if c.North != nil {
-		routes += "north=" + c.North.Name + " "
-	}
-	if c.East != nil {
-		routes += "east=" + c.East.Name + " "
-	}
-	if c.South != nil {
-		routes += "south=" + c.South.Name + " "
-	}
-	if c.West != nil {
-		routes += "west=" + c.West.Name + " "
-	}
-	return fmt.Sprintf("%s %v", c.Name, strings.Trim(routes, " "))
-}
-
-// loadMap reads in the map text file and parses the cities
-func loadMap(filePath string) (WorldMap, error) {
+// loadMap reads in the map text file and parses the cities into the worldMap
+func loadMap(filePath string) error {
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	lines := strings.Split(string(file), "\n")
-	worldMap := make(WorldMap, len(lines))
 	for _, line := range lines {
-		parseCity(line, worldMap)
+		parseCity(line)
 	}
-	return worldMap, nil
+	return nil
 }
 
-// parseCity reads in a line of input from the map file and updates
-// cities in the worldMap
-func parseCity(line string, worldMap WorldMap) {
+// parseCity reads in a line of input from the map file and updates cities in the worldMap
+func parseCity(line string) {
 	tokens := strings.Split(line, " ")
 
 	newCityName := tokens[0]
@@ -97,7 +74,7 @@ func parseCity(line string, worldMap WorldMap) {
 		}
 		linkCity := worldMap[name]
 
-		switch direction {
+		switch strings.ToLower(direction) {
 		case "north":
 			newCity.North = linkCity
 			linkCity.South = newCity

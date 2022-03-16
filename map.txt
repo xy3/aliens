@@ -1,5 +1,6 @@
-Foo north=Bar west=Baz south=Qu-ux
-Bar south=Foo west=Bee
-Bee west=Robert
-Robert west=Bob
-Kath west=Robert north=Foo east=Bar
+Paris east=London south=Kyiv
+Moscow north=London south=Milan east=Hongkong west=Kyiv
+Hongkong north=Dublin west=Moscow east=Lao
+Dubai west=Dublin south=Lao
+Milan west=Amsterdam east=Naples south=Berlin
+Budapest north=Amsterdam east=Berlin
