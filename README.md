@@ -78,7 +78,7 @@ The names should be self-explanatory.
 
 ## Example output
 
-```shell
+```go
 INFO[0000] Loading config from: /Users/tcoynemorgan/go/src/github.com/xy3/aliens/config.json 
 INFO[0000] Writing config to: /Users/tcoynemorgan/go/src/github.com/xy3/aliens/config.json 
 INFO[0000] PARSED SIMULATION WORLD MAP                  
