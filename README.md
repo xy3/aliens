@@ -76,6 +76,47 @@ Here is an example value for the config:
 
 The names should be self-explanatory. 
 
+## Example output
+
+```shell
+INFO[0000] Loading config from: /Users/tcoynemorgan/go/src/github.com/xy3/aliens/config.json 
+INFO[0000] Writing config to: /Users/tcoynemorgan/go/src/github.com/xy3/aliens/config.json 
+INFO[0000] PARSED SIMULATION WORLD MAP                  
+Amsterdam east=Milan south=Budapest
+Berlin north=Milan west=Budapest
+Budapest north=Amsterdam east=Berlin
+Dubai south=Lisbon west=Dublin
+Dublin east=Dubai south=Tokyo
+Lisbon north=Dubai west=Tokyo
+London south=Madrid west=Paris
+Madrid north=London east=Tokyo south=Milan west=Rome
+Milan east=Naples south=Berlin west=Amsterdam
+Naples west=Milan
+Paris east=London south=Rome
+Rome north=Paris east=Madrid
+Tokyo north=Dublin east=Lisbon west=Madrid
+INFO[0000] CREATED 17 RANDOM ALIENS SUCCESSFULLY        
+INFO[0000] Paris has been destroyed by Davin and Soval!  destroyedCity=Paris opponents="Davin vs Soval"
+INFO[0000] Dubai has been destroyed by Kagin and Rune!   destroyedCity=Dubai opponents="Kagin vs Rune"
+INFO[0000] Amsterdam has been destroyed by Joelle and Zorg!  destroyedCity=Amsterdam opponents="Joelle vs Zorg"
+INFO[0000] Budapest has been destroyed by Sabe and Joelle!  destroyedCity=Budapest opponents="Sabe vs Joelle"
+INFO[0000] Tokyo has been destroyed by Malcom and Ulga!  destroyedCity=Tokyo opponents="Malcom vs Ulga"
+INFO[0000] Rome has been destroyed by Belanna and Korlack!  destroyedCity=Rome opponents="Belanna vs Korlack"
+INFO[0000] Naples has been destroyed by Joalan and Aeryn_1!  destroyedCity=Naples opponents="Joalan vs Aeryn_1"
+INFO[0000] London has been destroyed by Crovits and Davin!  destroyedCity=London opponents="Crovits vs Davin"
+INFO[0000] Berlin has been destroyed by Zoe and Sabe!    destroyedCity=Berlin opponents="Zoe vs Sabe"
+INFO[0000] ==== SIMULATION RESULTS: ====                
+INFO[0000] SimulationResult                              days passed=3 dead=16 exhausted=1 trapped=0
+INFO[0000] 3 days have passed in the simulation         
+INFO[0000] 16 aliens have died                          
+INFO[0000] 1 aliens exhausted the move limit            
+INFO[0000] The world map that still remains is:         
+Dublin
+Lisbon
+Madrid south=Milan
+Milan
+```
+
 ## Possible design changes / future work
 
 There are a number of various changes that could be made to make this task more exciting or efficient:
@@ -94,3 +135,5 @@ There are a number of various changes that could be made to make this task more 
 ---
 
 ### Thanks for this task!
+
+Email: hi@theodore.ie
