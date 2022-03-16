@@ -1,16 +1,17 @@
 package aliens
 
-import log "github.com/sirupsen/logrus"
+import (
+	log "github.com/sirupsen/logrus"
+)
 
-const MaxAlienMoves = 100000
-
+// RunSimulation executes the simulation for a given number of aliens and a path to a map file
 func RunSimulation(alienCount int, mapFile string) error {
-	worldMap, err := loadMap(mapFile)
+	err := loadMap(mapFile)
 	if err != nil {
 		return err
 	}
 
-	log.Info("SIMULATION WORLD MAP")
+	log.Info("PARSED SIMULATION WORLD MAP")
 	worldMap.PrettyPrint()
 
 	allAliens, err := randomAliens(alienCount, worldMap)
@@ -20,21 +21,31 @@ func RunSimulation(alienCount int, mapFile string) error {
 	log.Infof("CREATED %d RANDOM ALIENS SUCCESSFULLY", alienCount)
 
 	var aliensExceedMaxMoves bool
-	var aliensAreDead bool
-	for !aliensExceedMaxMoves && !aliensAreDead {
+	var aliveAliens = alienCount
+	for !aliensExceedMaxMoves && aliveAliens > 1 {
+		aliveAliens = 0
 		for i := 0; i < alienCount; i++ {
 			alien := allAliens[i]
 			if alien.Dead {
-				aliensAreDead = true
 				continue
 			}
-			aliensAreDead = false
-			alien.Move(worldMap)
-			aliensExceedMaxMoves = alien.Moves > MaxAlienMoves
+			aliveAliens++
+			alien.Move()
+			aliensExceedMaxMoves = alien.Moves > Config.MaxAlienMoves
 		}
 	}
 
-	log.Infof("aliensExceedMaxMoves: %t, aliensAreDead: %t", aliensExceedMaxMoves, aliensAreDead)
+	log.Info("SIMULATION RESULTS:")
+	if aliensExceedMaxMoves {
+		log.Infof("All aliens have exceeded the max moves of %d", Config.MaxAlienMoves)
+	}
+	if aliveAliens == 0 {
+		log.Info("All aliens have died")
+	} else {
+		log.Infof("%d alien remained and exhausted the move limit", aliveAliens)
+	}
+
+	log.Infof("The world map that still remains is:")
+	worldMap.PrettyPrint()
 	return nil
 }
-
