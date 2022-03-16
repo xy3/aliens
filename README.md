@@ -76,6 +76,14 @@ Here is an example value for the config:
 
 The names should be self-explanatory. 
 
+## Running tests
+
+From the repo root run:
+
+```shell
+go test ./... -cover
+```
+
 ## Example output
 
 ```go
