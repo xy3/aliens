@@ -30,11 +30,27 @@ Theodore Coyne Morgan | March 2022`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = aliens.RunSimulation(count, aliens.Config.MapFile)
+		err = startSimulation(count, aliens.Config.MapFile)
 		if err != nil {
 			log.Fatal(err)
 		}
 	},
+}
+
+func startSimulation(count int, mapFile string) error {
+	worldMap, err := aliens.LoadMap(mapFile)
+	if err != nil {
+		return err
+	}
+
+	log.Info("PARSED SIMULATION WORLD MAP")
+	worldMap.PrettyPrint()
+	simulationResult, err := aliens.RunSimulation(count, worldMap)
+	if err != nil {
+		return err
+	}
+	simulationResult.Display()
+	return nil
 }
 
 func init() {

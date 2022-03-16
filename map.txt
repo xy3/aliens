@@ -1,6 +1,6 @@
-Paris east=London south=Kyiv
-Moscow north=London south=Milan east=Hongkong west=Kyiv
-Hongkong north=Dublin west=Moscow east=Lao
-Dubai west=Dublin south=Lao
+Paris east=London south=Rome
+Madrid north=London south=Milan east=Tokyo west=Rome
+Tokyo north=Dublin west=Madrid east=Lisbon
+Dubai west=Dublin south=Lisbon
 Milan west=Amsterdam east=Naples south=Berlin
 Budapest north=Amsterdam east=Berlin

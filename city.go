@@ -32,5 +32,23 @@ func (c *City) String() string {
 	if c.West != nil {
 		routes += "west=" + c.West.Name + " "
 	}
-	return fmt.Sprintf("%s %v", c.Name, strings.Trim(routes, " "))
+	return strings.Trim(fmt.Sprintf("%s %v", c.Name, strings.Trim(routes, " ")), " ")
 }
+
+// Destroy destroys a city and all of its connections to and from it
+func (c *City) Destroy(worldMap WorldMap) {
+	if c.North != nil {
+		c.North.South = nil
+	}
+	if c.East != nil {
+		c.East.West = nil
+	}
+	if c.West != nil {
+		c.West.East = nil
+	}
+	if c.South != nil {
+		c.South.North = nil
+	}
+	worldMap[c.Name] = nil
+}
+
