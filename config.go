@@ -3,12 +3,15 @@ package aliens
 import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"io/ioutil"
 	"os"
 	"path"
 )
 
 const ConfigFile = "config.json"
+
+var fs = afero.NewOsFs()
 
 var Config = config{
 	MaxAlienMoves:       100000,
@@ -34,11 +37,12 @@ func getConfigFilePath() string {
 func LoadConfig() error {
 	configFile := getConfigFilePath()
 	log.Printf("Loading config from: %s\n", configFile)
-	file, err := ioutil.ReadFile(configFile)
+	file, err := fs.Open(configFile)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(file, &Config)
+	fileData, _ := ioutil.ReadAll(file)
+	err = json.Unmarshal(fileData, &Config)
 	if err != nil {
 		return err
 	}
@@ -52,5 +56,5 @@ func WriteConfig() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(configFile, configJson, 0644)
+	return afero.WriteFile(fs, configFile, configJson, 0644)
 }
