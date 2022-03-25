@@ -1,8 +1,6 @@
 package world
 
 import (
-	"fmt"
-	"io"
 	"sort"
 	"strings"
 )
@@ -18,9 +16,4 @@ func (m Map) Serialize() (result string) {
     }
 	sort.Strings(cities)
 	return strings.Join(cities, "\n")
-}
-
-// Print formats the WorldMap into the original format using Serialize and prints the result
-func (m Map) Print(w io.Writer) {
-	fmt.Fprintln(w, m.Serialize())
 }

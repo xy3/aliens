@@ -2,7 +2,6 @@ package simulation
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/xy3/aliens/world"
 	"io"
 	"io/ioutil"
@@ -41,7 +40,7 @@ func randomCity(worldMap world.Map) (city *world.City) {
 
 var alienNamesUsage = map[string]int{}
 
-// loadAlienNames reads in a text file of Alien names one per line to be used when choosing random Alien names
+// loadAlienNames reads in a text file of alien names one per line to be used when choosing random alien names
 func loadAlienNames(file io.Reader) ([]string, error) {
 	fileData, err := ioutil.ReadAll(file)
 	if err != nil {
@@ -52,7 +51,7 @@ func loadAlienNames(file io.Reader) ([]string, error) {
 }
 
 // randomName generates a random number and uses that to select a random alien name from a provided list of names.
-// It will append a number to the end of a name if that particular name has already been used for another Alien.
+// It will append a number to the end of a name if that particular name has already been used for another alien.
 func randomName(names []string) string {
 	rand.Seed(time.Now().UnixNano())
 	randNameInt := rand.Intn(len(names))
@@ -75,10 +74,12 @@ func RandomAliens(count int, worldMap world.Map, namesReader io.Reader) ([]*worl
 	alienList := make([]*world.Alien, count)
 	for i := 0; i < count; i++ {
 		city := randomCity(worldMap)
-		alien := &world.Alien{Name: randomName(names), City: city}
+		alien := &world.Alien{
+			Name: randomName(names),
+			City: city,
+		}
 		alien.City.Inhabitant = alien
 		alienList[i] = alien
-		log.Debugf("Created alien: %+v", *alien)
 	}
 	return alienList, nil
 }

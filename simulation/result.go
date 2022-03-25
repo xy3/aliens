@@ -12,7 +12,7 @@ type Result struct {
 	AliensExceedMaxMoves bool
 	AliveAliens          int
 	StuckAliens          int
-	WorldMapResult       world.Map
+	WorldMap             world.Map
 }
 
 func (r Result) shouldContinue() bool {

@@ -1,24 +1,26 @@
 package cmd
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/xy3/aliens/config"
 	"github.com/xy3/aliens/parser"
 	"github.com/xy3/aliens/simulation"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
-// TODO:
-// Channels for messages
-// Packaging DONE
+// TODO Channels for messages
+// Packaging
 // Using IO writer for files and logs
 // Controlling the simulation in the cmd package
-// Update tests
+// TODO Update tests
+// New for command
 
-func startSimulation(count int, logger *log.Logger) error {
+func runSimulation(count int, logger *log.Logger) error {
 	mapFile, err := os.Open(config.Config.MapFile)
 	if err != nil {
 		return err
@@ -31,7 +33,7 @@ func startSimulation(count int, logger *log.Logger) error {
 	}
 
 	logger.Info("PARSED SIMULATION WORLD MAP")
-	worldMap.Print(os.Stdout)
+	fmt.Println(worldMap.Serialize())
 
 	namesFile, err := os.Open(config.Config.AlienNamesFile)
 	if err != nil {
@@ -46,9 +48,14 @@ func startSimulation(count int, logger *log.Logger) error {
 	logger.Infof("CREATED %d RANDOM ALIENS SUCCESSFULLY", count)
 
 	sim := simulation.New(allAliens, worldMap, config.Config.MaxAlienMoves)
-	sim.Run()
-	//sim.Display(logger)
-	sim.NextDay()
+	go sim.LogWorker(logger)
+	go sim.Run()
+	<- sim.DoneSimulation
+	time.Sleep(time.Second * 20)
+	sim.Result().Display(logger)
+
+	logger.Info("The world map that still remains is:")
+	fmt.Println(sim.Result().WorldMap.Serialize())
 
 	return nil
 }
@@ -81,7 +88,7 @@ Theodore Coyne Morgan | March 2022`,
 			if err != nil {
 				logger.Fatal(err)
 			}
-			err = startSimulation(count, logger)
+			err = runSimulation(count, logger)
 			if err != nil {
 				logger.Fatal(err)
 			}

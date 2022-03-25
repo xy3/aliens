@@ -30,7 +30,7 @@ func TestAlienFight(t *testing.T) {
 			worldMap := Map{}
 			tt.enemy.City.Inhabitant = tt.enemy
 			var city = *tt.enemy.City
-			tt.alien.Fight(tt.enemy, worldMap)
+			tt.alien.fight(tt.enemy, worldMap)
 			require.True(t, tt.enemy.Dead)
 			require.True(t, tt.alien.Dead)
 			require.Nil(t, tt.enemy.City)
@@ -111,7 +111,8 @@ func TestAlienMove(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			alien := tt.alien()
-			alien.Move(tt.worldMap())
+			moves := make(chan Move, 1)
+			alien.Move(tt.worldMap(), moves)
 			require.Equal(t, tt.wantAlien, alien)
 		})
 	}
@@ -134,7 +135,7 @@ func TestAlienChoosesToRemain(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var trueTimes int
 			for i := 0; i < 100; i++ {
-				got := tt.alien.choosesToRemain()
+				got := tt.alien.choosesToStay()
 				if got {
 					trueTimes++
 				}
@@ -176,34 +177,6 @@ func TestAlienFindAvailableRoute(t *testing.T) {
 			got := tt.alien.findAvailableRoute()
 			require.Equal(t, tt.want, got)
 			require.Equal(t, tt.wantStuck, tt.alien.Stuck)
-		})
-	}
-}
-
-func TestAlienMoveTo(t *testing.T) {
-	tests := []struct {
-		name  string
-		alien *Alien
-		city  *City
-	}{
-		{
-			name:  "alien moves to city",
-			alien: &Alien{},
-			city:  &City{Name: "Baz"},
-		},
-		{
-			name:  "alien moves to same city",
-			alien: &Alien{City: &City{Name: "Baz"}},
-			city:  &City{Name: "Baz"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			wantMoves := tt.alien.Moves + 1
-			tt.alien.moveTo(tt.city)
-			require.Equal(t, tt.city, tt.alien.City)
-			require.Equal(t, wantMoves, tt.alien.Moves)
-			require.Equal(t, tt.alien, tt.city.Inhabitant)
 		})
 	}
 }

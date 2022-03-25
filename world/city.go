@@ -6,7 +6,7 @@ import (
 )
 
 // City represents a city in the worldMap. It has a Name and a pointer to each of the Cities in the cardinal directions.
-// If there is no city in a certain direction the pointer will be null. Inhabitant records the presently occupying Alien
+// If there is no city in a certain direction the pointer will be null. Inhabitant records the presently occupying alien
 // of the City.
 type City struct {
 	Name       string

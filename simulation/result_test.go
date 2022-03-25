@@ -22,7 +22,7 @@ func TestResultDisplay(t *testing.T) {
 				AliensExceedMaxMoves: false,
 				AliveAliens:          0,
 				StuckAliens:          0,
-				WorldMapResult:       world.Map{},
+				WorldMap:             world.Map{},
 			},
 			wantMessages: []log.Entry{
 				{Message: "==== SIMULATION RESULTS: ====", Data: log.Fields{}},
