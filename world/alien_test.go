@@ -1,4 +1,4 @@
-package aliens
+package world
 
 import (
 	"github.com/stretchr/testify/require"
@@ -27,7 +27,7 @@ func TestAlienFight(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			worldMap := WorldMap{}
+			worldMap := Map{}
 			tt.enemy.City.Inhabitant = tt.enemy
 			var city = *tt.enemy.City
 			tt.alien.Fight(tt.enemy, worldMap)
@@ -48,7 +48,7 @@ func TestAlienMove(t *testing.T) {
 	tests := []struct {
 		name      string
 		alien     func() *Alien
-		worldMap  func() WorldMap
+		worldMap  func() Map
 		wantAlien *Alien
 	}{
 		{
@@ -57,8 +57,8 @@ func TestAlienMove(t *testing.T) {
 				return &Alien{}
 			},
 			wantAlien: &Alien{Dead: true},
-			worldMap: func() WorldMap {
-				return WorldMap{}
+			worldMap: func() Map {
+				return Map{}
 			},
 		},
 		{
@@ -72,9 +72,9 @@ func TestAlienMove(t *testing.T) {
 				City:  &City{Name: "Baz"},
 				Stuck: true,
 			},
-			worldMap: func() WorldMap {
+			worldMap: func() Map {
 				baz := &City{Name: "Baz"}
-				return WorldMap{baz.Name: baz}
+				return Map{baz.Name: baz}
 			},
 		},
 		{
@@ -85,9 +85,9 @@ func TestAlienMove(t *testing.T) {
 				return &Alien{Name: "alien", City: baz}
 			},
 			wantAlien: &Alien{Name: "alien", Dead: true, City: nil},
-			worldMap: func() WorldMap {
+			worldMap: func() Map {
 				baz := &City{Name: "Baz"}
-				return WorldMap{baz.Name: baz}
+				return Map{baz.Name: baz}
 			},
 		},
 		{
@@ -100,8 +100,8 @@ func TestAlienMove(t *testing.T) {
 				City:  northCity,
 				Moves: 1,
 			},
-			worldMap: func() WorldMap {
-				return WorldMap{
+			worldMap: func() Map {
+				return Map{
 					southCity.Name: southCity,
 					northCity.Name: northCity,
 				}

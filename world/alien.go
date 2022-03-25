@@ -1,4 +1,4 @@
-package aliens
+package world
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -19,7 +19,7 @@ type Alien struct {
 // Move moves an Alien to a next location by randomly choosing between staying in the same location or moving to another
 // city that has a connection to its current city. If there are no paths available the Alien will be forced to stay at
 // the same location and update its move counter.
-func (a *Alien) Move(worldMap WorldMap) {
+func (a *Alien) Move(worldMap Map) {
 	// prevent aliens from accidentally existing in non-existing cities
 	if a.City == nil || worldMap[a.City.Name] == nil {
 		a.Dead = true
@@ -105,7 +105,7 @@ func (a *Alien) choosesToRemain() bool {
 }
 
 // Fight sets both of the Alien's Dead property to true and destroys the city they are in, including its connections
-func (a *Alien) Fight(enemy *Alien, worldMap WorldMap) {
+func (a *Alien) Fight(enemy *Alien, worldMap Map) {
 	log.WithFields(log.Fields{
 		"opponents":     a.Name + " vs " + enemy.Name,
 		"destroyedCity": enemy.City.Name,

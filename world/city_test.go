@@ -1,4 +1,4 @@
-package aliens
+package world
 
 import (
 	"github.com/stretchr/testify/require"
@@ -32,7 +32,7 @@ func TestCityDestroy(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			city := tt.city()
 			cityName := city.Name
-			worldMap := WorldMap{
+			worldMap := Map{
 				city.Name: city,
 			}
 			city.Destroy(worldMap)
@@ -45,7 +45,7 @@ func TestCityDestroy(t *testing.T) {
 	}
 }
 
-func TestCityString(t *testing.T) {
+func TestCitySerialize(t *testing.T) {
 	tests := []struct {
 		name string
 		city *City
@@ -70,7 +70,7 @@ func TestCityString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.city.String()
+			got := tt.city.serialize()
 			require.Equal(t, tt.want, got)
 		})
 	}
