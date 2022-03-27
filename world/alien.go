@@ -1,6 +1,7 @@
 package world
 
 import (
+	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"time"
 )
@@ -25,40 +26,28 @@ const (
 )
 
 type Move struct {
-	MoveType  MoveType
-	City      string
-	AlienName string
-	EnemyName string
+	Type  MoveType
+	City  City
+	Alien Alien
+	Enemy Alien
 }
 
 // Move moves an alien to a next location by randomly choosing between staying in the same location or moving to another
 // city that has a connection to its current city. If there are no paths available the alien will be forced to stay at
 // the same location and update its move counter.
-func (a *Alien) Move(worldMap Map, moves chan Move) {
+func (a *Alien) Move(moves chan Move) {
 	// prevent aliens from accidentally existing in non-existing cities
-	if a.City == nil || worldMap[a.City.Name] == nil {
+	if a.City == nil || a.City.Destroyed {
 		a.Dead = true
-		return
-	}
-
-	// if there is an inhabitant (and it isn't the current alien) in the current city, start a fight between them
-	if a.City.Inhabitant != nil && a.City.Inhabitant.Name != a.Name {
-		moves <- Move{
-			MoveType:  Fight,
-			City:      a.City.Name,
-			AlienName: a.Name,
-			EnemyName: a.City.Inhabitant.Name,
-		}
-		a.fight(a.City.Inhabitant, worldMap)
 		return
 	}
 
 	// alien randomly chooses not to move to a new location
 	if a.choosesToStay() {
 		moves <- Move{
-			MoveType:  Stays,
-			City:      a.City.Name,
-			AlienName: a.Name,
+			Type:  Stays,
+			City:  *a.City,
+			Alien: *a,
 		}
 		return
 	}
@@ -67,34 +56,39 @@ func (a *Alien) Move(worldMap Map, moves chan Move) {
 	newCity := a.findAvailableRoute()
 	if newCity == nil {
 		moves <- Move{
-			MoveType:  Stuck,
-			City:      a.City.Name,
-			AlienName: a.Name,
+			Type:  Stuck,
+			City:  *a.City,
+			Alien: *a,
 		}
 		return
 	}
 
 	// if there is an inhabitant (and it isn't the current alien), start a fight between them
-	if newCity.Inhabitant != nil && newCity.Inhabitant.Name != a.Name {
-		newCity.Inhabitant.City = newCity
+	if newCity.Inhabitant != nil && newCity.Inhabitant != a {
+		//newCity.Inhabitant.City = newCity
 		moves <- Move{
-			MoveType:  Fight,
-			City:      newCity.Name,
-			AlienName: a.Name,
-			EnemyName: newCity.Inhabitant.Name,
+			Type:  Fight,
+			City:  *newCity,
+			Alien: *a,
+			Enemy: *newCity.Inhabitant,
 		}
-		a.fight(newCity.Inhabitant, worldMap)
+		a.fight(newCity.Inhabitant)
 		return
 	}
 
 	// move this alien along that route to the next city
+	moves <- a.moveTo(newCity)
+}
+
+func (a *Alien) moveTo(newCity *City) Move {
+	a.City.Inhabitant = nil
+	newCity.Inhabitant = a
 	a.City = newCity
 	a.Moves++
-	newCity.Inhabitant = a
-	moves <- Move{
-		MoveType:  Moved,
-		City:      a.City.Name,
-		AlienName: a.Name,
+	return Move{
+		Type:  Moved,
+		City:  *a.City,
+		Alien: *a,
 	}
 }
 
@@ -104,7 +98,7 @@ func (a *Alien) findAvailableRoute() *City {
 	routes := []*City{a.City.North, a.City.East, a.City.South, a.City.West}
 	var availableRoutes []*City
 	for _, r := range routes {
-		if r != nil {
+		if r != nil && !r.Destroyed {
 			availableRoutes = append(availableRoutes, r)
 		}
 	}
@@ -125,11 +119,30 @@ func (a *Alien) choosesToStay() bool {
 }
 
 // fight sets both of the Alien's Dead property to true and destroys the city they are in, including its connections
-func (a *Alien) fight(enemy *Alien, worldMap Map) {
-	a.City = nil
-	enemy.City.Inhabitant.Dead = true
-	enemy.City.Destroy(worldMap)
-	enemy.City = nil
+func (a *Alien) fight(defender *Alien) {
+	a.City.Inhabitant = nil
+	defender.City.Destroyed = true
 	a.Dead = true
-	return
+	defender.Dead = true
+}
+
+func (a *Alien) DeployTo(city *City) Move {
+	a.City = city
+	if a.City.Inhabitant != nil && a.City.Inhabitant != a {
+		move := Move{
+			Type:  Fight,
+			City:  *a.City,
+			Alien: *a,
+			Enemy: *a.City.Inhabitant,
+		}
+		a.fight(a.City.Inhabitant)
+		return move
+	}
+	log.Infof("Deployed %s to %s", a.Name, a.City.Name)
+	a.City.Inhabitant = a
+	return Move{
+		Type:  Moved,
+		City:  *a.City,
+		Alien: *a,
+	}
 }

@@ -30,7 +30,7 @@ func TestAlienFight(t *testing.T) {
 			worldMap := Map{}
 			tt.enemy.City.Inhabitant = tt.enemy
 			var city = *tt.enemy.City
-			tt.alien.fight(tt.enemy, worldMap)
+			tt.alien.fight(tt.enemy)
 			require.True(t, tt.enemy.Dead)
 			require.True(t, tt.alien.Dead)
 			require.Nil(t, tt.enemy.City)

@@ -1,23 +1,24 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"github.com/xy3/aliens/config"
 	"github.com/xy3/aliens/parser"
 	"github.com/xy3/aliens/simulation"
 	"os"
 	"strconv"
-	"time"
-
-	"github.com/spf13/cobra"
+	"sync"
 )
 
-// TODO Channels for messages
+// Channels for messages
 // Packaging
 // Using IO writer for files and logs
 // Controlling the simulation in the cmd package
 // TODO Update tests
+// TODO Update Comments
 // New for command
 
 func runSimulation(count int, logger *log.Logger) error {
@@ -41,21 +42,30 @@ func runSimulation(count int, logger *log.Logger) error {
 	}
 	defer namesFile.Close()
 
-	allAliens, err := simulation.RandomAliens(count, worldMap, namesFile)
+	allAliens, err := simulation.RandomAliens(count, namesFile)
 	if err != nil {
 		return err
 	}
 	logger.Infof("CREATED %d RANDOM ALIENS SUCCESSFULLY", count)
 
 	sim := simulation.New(allAliens, worldMap, config.Config.MaxAlienMoves)
-	go sim.LogWorker(logger)
-	go sim.Run()
-	<- sim.DoneSimulation
-	time.Sleep(time.Second * 20)
-	sim.Result().Display(logger)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		sim.LogWorker(ctx, logger)
+	}()
+	sim.DeployAliens()
+	result := sim.Run()
+	cancel()
+	wg.Wait()
+
+	result.Display(logger)
 
 	logger.Info("The world map that still remains is:")
-	fmt.Println(sim.Result().WorldMap.Serialize())
+	fmt.Println(result.WorldMap.Serialize())
 
 	return nil
 }

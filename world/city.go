@@ -15,23 +15,7 @@ type City struct {
 	South      *City
 	West       *City
 	Inhabitant *Alien
-}
-
-// Destroy destroys a city and all of its connections to and from it
-func (c *City) Destroy(worldMap Map) {
-	if c.North != nil {
-		c.North.South = nil
-	}
-	if c.East != nil {
-		c.East.West = nil
-	}
-	if c.West != nil {
-		c.West.East = nil
-	}
-	if c.South != nil {
-		c.South.North = nil
-	}
-	worldMap[c.Name] = nil
+	Destroyed  bool
 }
 
 // serialize returns a representation of the City used when formatting the worldMap at the end of the simulation.

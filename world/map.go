@@ -10,7 +10,7 @@ type Map map[string]*City
 func (m Map) Serialize() (result string) {
 	var cities []string
     for _, city := range m {
-		if city != nil {
+		if !city.Destroyed {
 			cities = append(cities, city.serialize())
 		}
     }

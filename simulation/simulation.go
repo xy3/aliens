@@ -1,6 +1,7 @@
 package simulation
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/xy3/aliens/world"
 )
@@ -9,34 +10,8 @@ type Simulation struct {
 	aliens   []*world.Alien
 	worldMap world.Map
 	maxMoves uint
-	result   Result
-	done     chan bool
-	DoneSimulation     chan bool
 	events   chan string
 	moves    chan world.Move
-}
-
-func (s *Simulation) nextDay() {
-	s.result.DaysPassed++
-	s.result.AliveAliens = 0
-	s.result.StuckAliens = 0
-	for i := 0; i < len(s.aliens); i++ {
-		currentAlien := s.aliens[i]
-		if currentAlien.Dead {
-			continue
-		}
-		s.result.AliveAliens++
-		if currentAlien.Stuck {
-			s.result.StuckAliens++
-			continue
-		}
-
-		currentAlien.Move(s.worldMap, s.moves)
-		s.result.AliensExceedMaxMoves = currentAlien.Moves > s.maxMoves
-	}
-	if s.result.DaysPassed%500 == 0 {
-		s.events <- "500 DAYS HAVE PASSED"
-	}
 }
 
 func New(aliens []*world.Alien, worldMap world.Map, maxMoves uint) Simulation {
@@ -44,63 +19,65 @@ func New(aliens []*world.Alien, worldMap world.Map, maxMoves uint) Simulation {
 		aliens:   aliens,
 		worldMap: worldMap,
 		maxMoves: maxMoves,
-		result: Result{
-			TotalAliens: len(aliens),
-			AliveAliens: len(aliens),
-			WorldMap:    worldMap,
-			DaysPassed:  1,
-		},
-		done:  make(chan bool, 1),
-		DoneSimulation:  make(chan bool, 1),
-		moves: make(chan world.Move, 100),
+		events:   make(chan string),
+		moves:    make(chan world.Move),
+	}
+}
+
+func (s *Simulation) nextDay() (dead, stuck, exhausted int) {
+	for _, alien := range s.aliens {
+		if alien.Dead {
+			dead++
+			continue
+		}
+		if alien.Stuck {
+			stuck++
+			continue
+		}
+		if alien.Moves > s.maxMoves {
+			exhausted++
+			continue
+		}
+		alien.Move(s.moves)
+	}
+	return
+}
+
+func (s *Simulation) DeployAliens() {
+	for _, alien := range s.aliens {
+		city, err := randomCity(s.worldMap)
+		for err == nil && city.Destroyed {
+			city, _ = randomCity(s.worldMap)
+		}
+		if err != nil {
+			log.Warn("All cities have been destroyed during alien deployment")
+			return
+		}
+		s.moves <- alien.DeployTo(city)
 	}
 }
 
 // Run executes the Simulation for a given number of aliens and a path to a map file
-func (s *Simulation) Run() {
-	for s.result.shouldContinue() {
-		s.nextDay()
-	}
-	s.result.WorldMap = s.worldMap
-	s.done <- true
-}
-
-func (s Simulation) Result() Result {
-	return s.result
-}
-
-func (s *Simulation) LogWorker(logger *log.Logger) {
-	for {
-		select {
-		case msg := <-s.events:
-			logger.Info(msg)
-		case move := <-s.moves:
-			logMove(move, logger)
-		case <-s.done:
-			s.DoneSimulation <- true
-			return
+func (s *Simulation) Run() Result {
+	total := len(s.aliens)
+	var dead, stuck, exhausted, days int
+	for shouldContinue(total, dead, stuck, exhausted) {
+		dead, stuck, exhausted = s.nextDay()
+		days++
+		if uint(days)%(s.maxMoves/10) == 0 {
+			s.events <- fmt.Sprintf("%d DAYS HAVE PASSED", s.maxMoves/10)
 		}
 	}
+	return Result{
+		Days:      days,
+		Exhausted: exhausted,
+		Alive:     total - dead,
+		Dead:      dead,
+		Stuck:     stuck,
+		WorldMap:  s.worldMap,
+	}
 }
 
-func logMove(move world.Move, logger *log.Logger) {
-	fields := log.Fields{
-		"alien": move.AlienName,
-		"city":  move.City,
-	}
-
-	switch move.MoveType {
-	case world.Moved:
-		logger.WithFields(fields).Debugf("%s has moved to %s", move.AlienName, move.City)
-	case world.Stays:
-		logger.WithFields(fields).Debugf("%s decides to remain at %s", move.AlienName, move.City)
-	case world.Stuck:
-		logger.WithFields(fields).Debugf("%s is stuck at %s", move.AlienName, move.City)
-	case world.Fight:
-		fields = log.Fields{
-			"opponents":     move.AlienName + " vs " + move.EnemyName,
-			"destroyedCity": move.City,
-		}
-		logger.WithFields(fields).Infof("%s has been destroyed by %s and %s", move.City, move.AlienName, move.EnemyName)
-	}
+func shouldContinue(total, dead, stuck, exhausted int) bool {
+	return total > dead+stuck+exhausted
 }
