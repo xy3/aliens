@@ -13,14 +13,6 @@ import (
 	"sync"
 )
 
-// Channels for messages
-// Packaging
-// Using IO writer for files and logs
-// Controlling the simulation in the cmd package
-// TODO Update tests
-// TODO Update Comments
-// New for command
-
 func runSimulation(count int, logger *log.Logger) error {
 	mapFile, err := os.Open(config.Config.MapFile)
 	if err != nil {

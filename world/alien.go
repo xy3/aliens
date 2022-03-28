@@ -1,6 +1,7 @@
 package world
 
 import (
+	"errors"
 	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"time"
@@ -35,49 +36,43 @@ type Move struct {
 // Move moves an alien to a next location by randomly choosing between staying in the same location or moving to another
 // city that has a connection to its current city. If there are no paths available the alien will be forced to stay at
 // the same location and update its move counter.
-func (a *Alien) Move(moves chan Move) {
-	// prevent aliens from accidentally existing in non-existing cities
+func (a *Alien) Move() (Move, error) {
 	if a.City == nil || a.City.Destroyed {
-		a.Dead = true
-		return
+		return Move{}, errors.New("alien is currently in a non existing or destroyed city")
 	}
-
 	// alien randomly chooses not to move to a new location
 	if a.choosesToStay() {
-		moves <- Move{
+		return Move{
 			Type:  Stays,
 			City:  *a.City,
 			Alien: *a,
-		}
-		return
+		}, nil
 	}
 
 	// find routes the alien can move to, or stay at the same location
 	newCity := a.findAvailableRoute()
 	if newCity == nil {
-		moves <- Move{
+		return Move{
 			Type:  Stuck,
 			City:  *a.City,
 			Alien: *a,
-		}
-		return
+		}, nil
 	}
 
 	// if there is an inhabitant (and it isn't the current alien), start a fight between them
 	if newCity.Inhabitant != nil && newCity.Inhabitant != a {
-		//newCity.Inhabitant.City = newCity
-		moves <- Move{
+		move := Move{
 			Type:  Fight,
 			City:  *newCity,
 			Alien: *a,
 			Enemy: *newCity.Inhabitant,
 		}
 		a.fight(newCity.Inhabitant)
-		return
+		return move, nil
 	}
 
 	// move this alien along that route to the next city
-	moves <- a.moveTo(newCity)
+	return a.moveTo(newCity), nil
 }
 
 func (a *Alien) moveTo(newCity *City) Move {
@@ -108,6 +103,7 @@ func (a *Alien) findAvailableRoute() *City {
 		return nil
 	}
 	// randomly choose a route to a next city
+	rand.Seed(time.Now().UnixNano())
 	chosenRoute := rand.Intn(len(availableRoutes))
 	return availableRoutes[chosenRoute]
 }

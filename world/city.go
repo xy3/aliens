@@ -18,6 +18,36 @@ type City struct {
 	Destroyed  bool
 }
 
+func (c City) WithNorth(north *City) *City {
+	c.North = north
+	north.South = &c
+	return &c
+}
+
+func (c City) WithEast(east *City) *City {
+	c.East = east
+	east.West = &c
+	return &c
+}
+
+func (c City) WithSouth(south *City) *City {
+	c.South = south
+	south.North = &c
+	return &c
+}
+
+func (c City) WithWest(west *City) *City {
+	c.West = west
+	west.East = &c
+	return &c
+}
+
+func (c City) WithInhabitant(inhabitant *Alien) *City {
+	c.Inhabitant = inhabitant
+	inhabitant.City = &c
+	return &c
+}
+
 // serialize returns a representation of the City used when formatting the worldMap at the end of the simulation.
 func (c *City) serialize() string {
 	var routes string

@@ -2,7 +2,10 @@ package config
 
 import (
 	"bytes"
+	"github.com/stretchr/testify/require"
 	"io"
+	"os"
+	"path"
 	"testing"
 )
 
@@ -12,7 +15,16 @@ func TestLoad(t *testing.T) {
 		file io.Reader
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:    "load invalid config",
+			file:    bytes.NewBufferString(""),
+			wantErr: true,
+		},
+		{
+			name:    "load valid config",
+			file:    bytes.NewBufferString("{\"MaxAlienMoves\": 100000, \"MapFile\": \"map.txt\", \"AlienNamesFile\": \"alien-names.txt\", \"DebugMode\": false}"),
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -26,15 +38,19 @@ func TestLoad(t *testing.T) {
 func TestPath(t *testing.T) {
 	tests := []struct {
 		name string
-		want string
+		want func () string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "basic config path",
+			want: func() string {
+				getwd, _ := os.Getwd()
+				return path.Join(getwd, "config.json")
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Path(); got != tt.want {
-				t.Errorf("Path() = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, tt.want(), Path())
 		})
 	}
 }
@@ -45,7 +61,11 @@ func TestWrite(t *testing.T) {
 		wantFile string
 		wantErr  bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:     "default config write",
+			wantFile: "{\n    \"MaxAlienMoves\": 100000,\n    \"MapFile\": \"map.txt\",\n    \"AlienNamesFile\": \"alien-names.txt\",\n    \"DebugMode\": false\n}",
+			wantErr:  false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -55,9 +75,8 @@ func TestWrite(t *testing.T) {
 				t.Errorf("Write() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if gotFile := file.String(); gotFile != tt.wantFile {
-				t.Errorf("Write() gotFile = %v, want %v", gotFile, tt.wantFile)
-			}
+			gotFile := file.String()
+			require.Equal(t, tt.wantFile, gotFile)
 		})
 	}
 }

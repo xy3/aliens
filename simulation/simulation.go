@@ -38,7 +38,13 @@ func (s *Simulation) nextDay() (dead, stuck, exhausted int) {
 			exhausted++
 			continue
 		}
-		alien.Move(s.moves)
+		move, err := alien.Move()
+		if err != nil {
+			log.Warn(err)
+			alien.Dead = true
+			continue
+		}
+		s.moves <- move
 	}
 	return
 }
